@@ -25,7 +25,7 @@ function App() {
       const response = await axios.get(`${API_BASE}/articles`)
       setArticles(response.data)
     } catch (error) {
-      console.error('Error fetching articles:', error)
+      console.error('抓取失败:', error)
     }
   }
 
@@ -53,7 +53,7 @@ function App() {
         setPassword('')
       }
     } catch (error) {
-      alert('Invalid password')
+      alert('密码错误')
     }
   }
 
@@ -94,7 +94,7 @@ function App() {
       setFormData({ title: '', content: '' })
       fetchArticles()
     } catch (error) {
-      alert('Error saving article')
+      alert('保存失败')
     }
   }
 
@@ -107,7 +107,7 @@ function App() {
         })
         fetchArticles()
       } catch (error) {
-        alert('Error deleting article')
+        alert('删除失败')
       }
     }
   }
@@ -116,7 +116,7 @@ function App() {
     <div>
       <header className="header">
         <div className="container">
-          <h1>My Blog</h1>
+          <h1>kyleshao的博客</h1>
           {isAuthenticated && (
             <div style={{ marginTop: '1rem' }}>
               <button onClick={handleCreate} className="btn btn-primary">New Article</button>
@@ -129,10 +129,10 @@ function App() {
       <div className="container">
         {!isAuthenticated ? (
           <form onSubmit={handleLogin} className="login-form">
-            <h2>Admin Login</h2>
+            <h2>输入管理密码</h2>
             <input
               type="password"
-              placeholder="Enter admin password"
+              placeholder="输入管理密码"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -141,18 +141,18 @@ function App() {
           </form>
         ) : showEditor ? (
           <div className="admin-panel">
-            <h2>{editingArticle ? 'Edit Article' : 'New Article'}</h2>
+            <h2>{editingArticle ? '修改文章' : '新建文章'}</h2>
             <form onSubmit={handleSubmit} className="editor">
               <input
                 type="text"
-                placeholder="Title"
+                placeholder="标题"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
                 style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
               />
               <textarea
-                placeholder="Write your article in Markdown..."
+                placeholder="用Markdown编写"
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 required
