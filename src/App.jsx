@@ -33,7 +33,7 @@ function App() {
     try {
       const token = localStorage.getItem('adminToken')
       if (token) {
-        const response = await axios.get(`${API_BASE}/auth/check`, {
+        const response = await axios.get(`${API_BASE}/auth/login`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         setIsAuthenticated(response.data.authenticated)
