@@ -119,8 +119,8 @@ function App() {
           <h1>kyleshao的博客</h1>
           {isAuthenticated && (
             <div style={{ marginTop: '1rem' }}>
-              <button onClick={handleCreate} className="btn btn-primary">New Article</button>
-              <button onClick={handleLogout} className="btn btn-secondary" style={{ marginLeft: '1rem' }}>Logout</button>
+              <button onClick={handleCreate} className="btn btn-primary">新建文章</button>
+              <button onClick={handleLogout} className="btn btn-secondary" style={{ marginLeft: '1rem' }}>登出</button>
             </div>
           )}
         </div>
@@ -137,7 +137,7 @@ function App() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <button type="submit">Login</button>
+            <button type="submit">登录</button>
           </form>
         ) : showEditor ? (
           <div className="admin-panel">
@@ -159,10 +159,10 @@ function App() {
               />
               <div className="editor-actions">
                 <button type="submit" className="btn btn-primary">
-                  {editingArticle ? 'Update' : 'Create'}
+                  {editingArticle ? '更新' : '创建'}
                 </button>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowEditor(false)}>
-                  Cancel
+                  取消
                 </button>
               </div>
             </form>
@@ -186,8 +186,8 @@ function App() {
               </div>
               {isAuthenticated && !showEditor && (
                 <div style={{ marginTop: '1rem' }}>
-                  <button onClick={() => handleEdit(article)} className="btn btn-primary">Edit</button>
-                  <button onClick={() => handleDelete(article._id)} className="btn btn-danger" style={{ marginLeft: '0.5rem' }}>Delete</button>
+                  <button onClick={() => handleEdit(article)} className="btn btn-primary">编辑</button>
+                  <button onClick={() => handleDelete(article._id)} className="btn btn-danger" style={{ marginLeft: '0.5rem' }}>删除</button>
                 </div>
               )}
             </div>
