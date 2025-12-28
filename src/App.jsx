@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate, Navigate } from 'react-router-dom'
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+  Link, 
+  useParams, 
+  useNavigate,
+  Navigate 
+} from 'react-router-dom'
 import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
@@ -7,6 +15,7 @@ import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
+console.log('API基础URL:', API_BASE)  // 添加这行
 
 // 主页组件 - 显示文章列表
 function HomePage() {
@@ -14,30 +23,39 @@ function HomePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
+    console.log('HomePage: 初始化')  // 添加这行
     fetchArticles()
     checkAuth()
   }, [])
 
   const fetchArticles = async () => {
     try {
+      console.log('获取文章中...')  // 添加这行
       const response = await axios.get(`${API_BASE}/articles`)
+      console.log('文章数据:', response.data)  // 添加这行
       setArticles(response.data)
     } catch (error) {
-      console.error('抓取失败:', error)
+      console.error('抓取失败:', error.response || error)
     }
   }
 
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('adminToken')
+      console.log('HomePage检查认证，token:', token)  // 添加这行
       if (token) {
-        const response = await axios.get(`${API_BASE}/auth/check`, {
+        const response = await axios.get(`${API_BASE}/auth/check`, {  // 修复这里
           headers: { Authorization: `Bearer ${token}` }
         })
+        console.log('HomePage认证检查响应:', response.data)  // 添加这行
         setIsAuthenticated(response.data.authenticated)
+      } else {
+        console.log('HomePage: 没有找到token')
       }
     } catch (error) {
+      console.error('HomePage认证检查错误:', error.response || error)
       localStorage.removeItem('adminToken')
+      setIsAuthenticated(false)
     }
   }
 
@@ -45,11 +63,13 @@ function HomePage() {
     if (confirm('确定要删除这篇文章吗?')) {
       try {
         const token = localStorage.getItem('adminToken')
+        console.log('删除文章，token:', token)  // 添加这行
         await axios.delete(`${API_BASE}/articles/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         fetchArticles()
       } catch (error) {
+        console.error('删除失败:', error.response || error)
         alert('删除失败')
       }
     }
@@ -58,6 +78,10 @@ function HomePage() {
   return (
     <div>
       <div className="container">
+        <div style={{ marginBottom: '2rem' }}>
+          <h2>所有文章</h2>
+          <p>当前认证状态: {isAuthenticated ? '已登录' : '未登录'}</p>  {/* 添加这行 */}
+        </div>
         <div>
           {articles.map(article => (
             <div key={article._id} className="article">
@@ -119,16 +143,19 @@ function ArticlePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('ArticlePage: 文章ID:', id)  // 添加这行
     fetchArticle()
     checkAuth()
   }, [id])
 
   const fetchArticle = async () => {
     try {
+      console.log('获取单篇文章...')  // 添加这行
       const response = await axios.get(`${API_BASE}/articles/${id}`)
+      console.log('单篇文章数据:', response.data)  // 添加这行
       setArticle(response.data)
     } catch (error) {
-      console.error('抓取文章失败:', error)
+      console.error('抓取文章失败:', error.response || error)
     } finally {
       setLoading(false)
     }
@@ -137,13 +164,16 @@ function ArticlePage() {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('adminToken')
+      console.log('ArticlePage检查认证，token:', token)  // 添加这行
       if (token) {
         const response = await axios.get(`${API_BASE}/auth/check`, {
           headers: { Authorization: `Bearer ${token}` }
         })
+        console.log('ArticlePage认证检查响应:', response.data)  // 添加这行
         setIsAuthenticated(response.data.authenticated)
       }
     } catch (error) {
+      console.error('ArticlePage认证检查错误:', error.response || error)
       localStorage.removeItem('adminToken')
     }
   }
@@ -152,11 +182,13 @@ function ArticlePage() {
     if (confirm('确定要删除这篇文章吗?')) {
       try {
         const token = localStorage.getItem('adminToken')
+        console.log('删除单篇文章，token:', token)  // 添加这行
         await axios.delete(`${API_BASE}/articles/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         navigate('/')
       } catch (error) {
+        console.error('删除失败:', error.response || error)
         alert('删除失败')
       }
     }
@@ -238,12 +270,16 @@ function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
+      console.log('尝试登录，密码:', password)  // 添加这行
       const response = await axios.post(`${API_BASE}/auth/login`, { password })
+      console.log('登录响应:', response.data)  // 添加这行
       if (response.data.success) {
+        console.log('存储token:', response.data.token)  // 添加这行
         localStorage.setItem('adminToken', response.data.token)
         navigate('/')
       }
     } catch (error) {
+      console.error('登录错误:', error.response || error)  // 添加这行
       setError('密码错误')
     }
   }
@@ -301,6 +337,7 @@ function EditPage() {
   const [formData, setFormData] = useState({ title: '', content: '' })
 
   useEffect(() => {
+    console.log('EditPage: 文章ID:', id || '新建文章')  // 添加这行
     checkAuth()
     if (id) {
       fetchArticle()
@@ -310,15 +347,19 @@ function EditPage() {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('adminToken')
+      console.log('EditPage检查认证，token:', token)  // 添加这行
       if (token) {
         const response = await axios.get(`${API_BASE}/auth/check`, {
           headers: { Authorization: `Bearer ${token}` }
         })
+        console.log('EditPage认证检查响应:', response.data)  // 添加这行
         setIsAuthenticated(response.data.authenticated)
       } else {
+        console.log('EditPage: 没有token，跳转到登录页')
         navigate('/login')
       }
     } catch (error) {
+      console.error('EditPage认证检查错误:', error.response || error)
       localStorage.removeItem('adminToken')
       navigate('/login')
     } finally {
@@ -334,7 +375,7 @@ function EditPage() {
         content: response.data.content
       })
     } catch (error) {
-      console.error('抓取文章失败:', error)
+      console.error('抓取文章失败:', error.response || error)
     }
   }
 
@@ -342,17 +383,21 @@ function EditPage() {
     e.preventDefault()
     try {
       const token = localStorage.getItem('adminToken')
+      console.log('保存文章，token:', token)  // 添加这行
       if (id) {
+        console.log('更新文章:', id)  // 添加这行
         await axios.put(`${API_BASE}/articles/${id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         })
       } else {
+        console.log('创建新文章')  // 添加这行
         await axios.post(`${API_BASE}/articles`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         })
       }
       navigate('/')
     } catch (error) {
+      console.error('保存失败:', error.response || error)
       alert('保存失败')
     }
   }
@@ -428,18 +473,22 @@ function Header() {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('adminToken')
+      console.log('Header检查认证，token:', token)  // 添加这行
       if (token) {
         const response = await axios.get(`${API_BASE}/auth/check`, {
           headers: { Authorization: `Bearer ${token}` }
         })
+        console.log('Header认证检查响应:', response.data)  // 添加这行
         setIsAuthenticated(response.data.authenticated)
       }
     } catch (error) {
+      console.error('Header认证检查错误:', error.response || error)
       localStorage.removeItem('adminToken')
     }
   }
 
   const handleLogout = () => {
+    console.log('用户登出')  // 添加这行
     localStorage.removeItem('adminToken')
     setIsAuthenticated(false)
     navigate('/')
