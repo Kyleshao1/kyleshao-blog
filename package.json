@@ -1,0 +1,8 @@
+{
+  "name": "blog-fullstack",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}

@@ -1,0 +1,286 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=IBM+Plex+Mono:wght@300;500&display=swap');
+
+:root {
+  --bg: #f7f4ee;
+  --surface: #fffdf7;
+  --primary: #2a5c82;
+  --accent: #d67a3e;
+  --text: #1b1b1b;
+  --muted: #6e6e6e;
+  --border: #e5dccb;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Noto Sans SC", sans-serif;
+  background: radial-gradient(circle at top left, #fff3de, var(--bg));
+  color: var(--text);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 253, 247, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nav__links {
+  display: flex;
+  gap: 16px;
+  font-weight: 500;
+}
+
+.nav__auth {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.logo {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 500;
+  font-size: 20px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 0 24px;
+}
+
+.container.narrow {
+  max-width: 600px;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.card__title {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.card__meta {
+  color: var(--muted);
+  font-size: 13px;
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.card__body {
+  margin-top: 12px;
+  color: #2d2d2d;
+}
+
+.card__footer {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.input, .textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: white;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.btn {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.hint {
+  color: var(--muted);
+  margin-top: 12px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+
+.post {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.post__header h1 {
+  margin: 0 0 8px 0;
+}
+
+.post__meta {
+  color: var(--muted);
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.post__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.editor__preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.preview__title {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.comments {
+  margin-top: 28px;
+}
+
+.comment {
+  border-left: 3px solid var(--border);
+  padding-left: 14px;
+  margin-top: 16px;
+}
+
+.comment__meta {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.comment__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.comment__children {
+  margin-left: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.table {
+  display: grid;
+  gap: 12px;
+}
+
+.table__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.error {
+  color: #b00020;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .editor {
+    grid-template-columns: 1fr;
+  }
+  .nav__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav__links {
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  githubId     String?  @unique @map("github_id")
+  name         String
+  avatarUrl    String?  @map("avatar_url")
+  bio          String   @default("")
+  signature    String   @default("")
+  role         Role     @default(USER)
+  isBanned     Boolean  @default(false) @map("is_banned")
+  mutedUntil   DateTime? @map("muted_until")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  posts        Post[]
+  comments     Comment[]
+  postReactions    PostReaction[]
+  commentReactions CommentReaction[]
+
+  @@map("users")
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  authorId    String   @map("author_id")
+  title       String
+  contentMd   String   @map("content_md")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  author      User     @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+  reactions   PostReaction[]
+
+  @@index([authorId])
+  @@map("posts")
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  postId     String   @map("post_id")
+  authorId   String   @map("author_id")
+  parentId   String?  @map("parent_id")
+  contentMd  String   @map("content_md")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  post       Post     @relation(fields: [postId], references: [id])
+  author     User     @relation(fields: [authorId], references: [id])
+  parent     Comment? @relation("CommentToComment", fields: [parentId], references: [id])
+  replies    Comment[] @relation("CommentToComment")
+  reactions  CommentReaction[]
+
+  @@index([postId])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model PostReaction {
+  id        String @id @default(cuid())
+  postId    String @map("post_id")
+  userId    String @map("user_id")
+  value     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post      Post   @relation(fields: [postId], references: [id])
+  user      User   @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+  @@index([userId])
+  @@map("post_reactions")
+}
+
+model CommentReaction {
+  id        String @id @default(cuid())
+  commentId String @map("comment_id")
+  userId    String @map("user_id")
+  value     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment   Comment @relation(fields: [commentId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId])
+  @@index([userId])
+  @@map("comment_reactions")
+}
