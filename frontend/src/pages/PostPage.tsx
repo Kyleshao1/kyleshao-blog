@@ -11,6 +11,7 @@ export function PostPage() {
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [commentText, setCommentText] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
@@ -67,6 +68,7 @@ export function PostPage() {
           <div className="post__meta">
             <span>{post.author.name}</span>
             {post.author.signature && <span>· {post.author.signature}</span>}
+            {post.group && <span>· 分组 {post.group.name}</span>}
             <span>· {new Date(post.createdAt).toLocaleString()}</span>
           </div>
           {canEdit && (
@@ -91,7 +93,17 @@ export function PostPage() {
         {user ? (
           <div className="comment-form">
             <textarea className="textarea" value={commentText} onChange={(e) => setCommentText(e.target.value)} />
-            <button className="btn" onClick={submitComment}>发表评论</button>
+            <div className="row">
+              <button className="btn btn--ghost" onClick={() => setShowPreview((v) => !v)}>
+                {showPreview ? "关闭预览" : "预览评论"}
+              </button>
+              <button className="btn" onClick={submitComment}>发表评论</button>
+            </div>
+            {showPreview && (
+              <div className="card">
+                <Markdown content={commentText || "预览内容"} />
+              </div>
+            )}
           </div>
         ) : (
           <div className="hint">登录后可评论</div>
