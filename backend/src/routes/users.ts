@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 import { prisma } from "../db";
 import { authRequired } from "../middleware/auth";
 
@@ -26,6 +27,7 @@ usersRouter.get("/me", authRequired, async (req, res) => {
 
 usersRouter.get("/users", async (_req, res) => {
   const users = await prisma.user.findMany({
+    where: { deactivatedAt: null },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -42,7 +44,7 @@ usersRouter.get("/users", async (_req, res) => {
 
 usersRouter.get("/users/:id", async (req, res) => {
   const user = await prisma.user.findUnique({
-    where: { id: req.params.id },
+    where: { id: req.params.id, deactivatedAt: null },
     select: {
       id: true,
       name: true,
@@ -111,7 +113,7 @@ usersRouter.post("/users/:id/follow", authRequired, async (req, res) => {
   if (targetId === req.user!.id) {
     return res.status(400).json({ error: "Cannot follow yourself" });
   }
-  const target = await prisma.user.findUnique({ where: { id: targetId } });
+  const target = await prisma.user.findUnique({ where: { id: targetId, deactivatedAt: null } });
   if (!target) {
     return res.status(404).json({ error: "User not found" });
   }
@@ -133,6 +135,28 @@ usersRouter.get("/users/:id/following", authRequired, async (req, res) => {
     where: { followerId_followingId: { followerId: req.user!.id, followingId: req.params.id } },
   });
   return res.json({ following: Boolean(existing) });
+});
+
+const deactivateSchema = z.object({ password: z.string().min(1) });
+
+usersRouter.delete("/me", authRequired, async (req, res) => {
+  const parsed = deactivateSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid payload" });
+  }
+  const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+  if (!user || !user.passwordHash) {
+    return res.status(400).json({ error: "Password not set for this account" });
+  }
+  const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
+  if (!ok) {
+    return res.status(403).json({ error: "Invalid password" });
+  }
+  await prisma.user.update({
+    where: { id: req.user!.id },
+    data: { deactivatedAt: new Date() },
+  });
+  return res.json({ ok: true });
 });
 
 const groupSchema = z.object({ name: z.string().min(1).max(50) });
