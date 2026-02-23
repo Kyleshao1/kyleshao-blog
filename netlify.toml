@@ -1,5 +1,5 @@
 [build]
-  command = "npm install && npm --prefix backend run prisma:generate && npm --prefix backend run prisma:deploy && npm --prefix frontend run build"
+  command = "npm install && npm --prefix backend run prisma:generate && npm --prefix frontend run build"
   publish = "frontend/dist"
   functions = "netlify/functions"
 
