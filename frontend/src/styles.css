@@ -7,7 +7,7 @@
   --accent: #d67a3e;
   --text: #1b1b1b;
   --muted: #6e6e6e;
-  --border: #e5dccd;
+  --border: #e5dccb;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
@@ -241,6 +241,18 @@ a {
 
 .comment__children {
   margin-left: 16px;
+}
+
+.comment-form .card {
+  margin-top: 12px;
+}
+
+.group {
+  margin-top: 16px;
+}
+
+.group h3 {
+  margin: 0 0 12px 0;
 }
 
 .row {
