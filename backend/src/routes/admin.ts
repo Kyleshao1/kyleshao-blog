@@ -17,7 +17,9 @@ adminRouter.get("/users", async (_req, res) => {
       name: true,
       role: true,
       isBanned: true,
+      bannedUntil: true,
       mutedUntil: true,
+      mutedForever: true,
       deactivatedAt: true,
       createdAt: true,
     },
@@ -26,8 +28,12 @@ adminRouter.get("/users", async (_req, res) => {
 });
 
 const moderationSchema = z.object({
-  isBanned: z.boolean().optional(),
-  mutedUntil: z.string().datetime().optional().nullable(),
+  unban: z.boolean().optional(),
+  banPermanent: z.boolean().optional(),
+  banHours: z.number().int().positive().optional(),
+  unmute: z.boolean().optional(),
+  mutePermanent: z.boolean().optional(),
+  muteHours: z.number().int().positive().optional(),
 });
 
 adminRouter.patch("/users/:id", async (req, res) => {
@@ -43,18 +49,39 @@ adminRouter.patch("/users/:id", async (req, res) => {
     return res.status(400).json({ error: "Cannot moderate admin" });
   }
 
-  const data: { isBanned?: boolean; mutedUntil?: Date | null } = {};
-  if (parsed.data.isBanned !== undefined) {
-    data.isBanned = parsed.data.isBanned;
+  const data: {
+    isBanned?: boolean;
+    bannedUntil?: Date | null;
+    mutedUntil?: Date | null;
+    mutedForever?: boolean;
+  } = {};
+
+  if (parsed.data.unban) {
+    data.isBanned = false;
+    data.bannedUntil = null;
+  } else if (parsed.data.banPermanent) {
+    data.isBanned = true;
+    data.bannedUntil = null;
+  } else if (parsed.data.banHours) {
+    data.isBanned = false;
+    data.bannedUntil = new Date(Date.now() + parsed.data.banHours * 3600 * 1000);
   }
-  if (parsed.data.mutedUntil !== undefined) {
-    data.mutedUntil = parsed.data.mutedUntil ? new Date(parsed.data.mutedUntil) : null;
+
+  if (parsed.data.unmute) {
+    data.mutedForever = false;
+    data.mutedUntil = null;
+  } else if (parsed.data.mutePermanent) {
+    data.mutedForever = true;
+    data.mutedUntil = null;
+  } else if (parsed.data.muteHours) {
+    data.mutedForever = false;
+    data.mutedUntil = new Date(Date.now() + parsed.data.muteHours * 3600 * 1000);
   }
 
   const updated = await prisma.user.update({
     where: { id: target.id },
     data,
-    select: { id: true, isBanned: true, mutedUntil: true },
+    select: { id: true, isBanned: true, bannedUntil: true, mutedUntil: true, mutedForever: true },
   });
   return res.json({ user: updated });
 });
@@ -64,7 +91,18 @@ adminRouter.delete("/posts/:id", async (req, res) => {
   if (!post || post.deletedAt) {
     return res.status(404).json({ error: "Post not found" });
   }
-  await prisma.post.update({ where: { id: post.id }, data: { deletedAt: new Date() } });
+  const commentIds = await prisma.comment.findMany({
+    where: { postId: post.id },
+    select: { id: true },
+  });
+  const ids = commentIds.map((c) => c.id);
+
+  await prisma.$transaction([
+    prisma.commentReaction.deleteMany({ where: { commentId: { in: ids } } }),
+    prisma.comment.deleteMany({ where: { postId: post.id } }),
+    prisma.postReaction.deleteMany({ where: { postId: post.id } }),
+    prisma.post.delete({ where: { id: post.id } }),
+  ]);
   return res.json({ ok: true });
 });
 
