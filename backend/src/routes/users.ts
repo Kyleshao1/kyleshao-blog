@@ -36,13 +36,26 @@ usersRouter.get("/users", async (_req, res) => {
       bio: true,
       signature: true,
       createdAt: true,
-      _count: { select: { posts: true, followers: true } },
+      _count: { select: { followers: true } },
     },
   });
-  return res.json({ users });
+
+  const postCounts = await prisma.post.groupBy({
+    by: ["authorId"],
+    where: { deletedAt: null },
+    _count: { _all: true },
+  });
+  const postCountMap = new Map(postCounts.map((c) => [c.authorId, c._count._all]));
+
+  return res.json({
+    users: users.map((u) => ({
+      ...u,
+      _count: { posts: postCountMap.get(u.id) || 0, followers: u._count.followers },
+    })),
+  });
 });
 
-usersRouter.get("/users/:id", async (req, res) => {
+usersRouter.get("/users/:id", authOptional, async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.params.id, deactivatedAt: null },
     select: {
@@ -53,12 +66,20 @@ usersRouter.get("/users/:id", async (req, res) => {
       signature: true,
       createdAt: true,
       groups: { select: { id: true, name: true } },
-      _count: { select: { posts: true, followers: true, following: true } },
+      _count: { select: { followers: true, following: true } },
+      isBanned: true,
+      bannedUntil: true,
+      mutedUntil: true,
+      mutedForever: true,
     },
   });
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
+
+  const postsCount = await prisma.post.count({
+    where: { authorId: user.id, deletedAt: null },
+  });
 
   const posts = await prisma.post.findMany({
     where: { authorId: user.id, deletedAt: null },
@@ -105,7 +126,30 @@ usersRouter.get("/users/:id", async (req, res) => {
     },
   }));
 
-  return res.json({ user, posts: postData, comments: commentData });
+  const canSeeModeration = req.user?.role === "ADMIN";
+
+  return res.json({
+    user: {
+      id: user.id,
+      name: user.name,
+      avatarUrl: user.avatarUrl,
+      bio: user.bio,
+      signature: user.signature,
+      createdAt: user.createdAt,
+      groups: user.groups,
+      _count: { posts: postsCount, followers: user._count.followers, following: user._count.following },
+      ...(canSeeModeration
+        ? {
+            isBanned: user.isBanned,
+            bannedUntil: user.bannedUntil,
+            mutedUntil: user.mutedUntil,
+            mutedForever: user.mutedForever,
+          }
+        : {}),
+    },
+    posts: postData,
+    comments: commentData,
+  });
 });
 
 usersRouter.post("/users/:id/follow", authRequired, async (req, res) => {
