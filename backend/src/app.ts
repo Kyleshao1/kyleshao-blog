@@ -11,6 +11,7 @@ import { postsRouter } from "./routes/posts";
 import { commentsRouter } from "./routes/comments";
 import { usersRouter } from "./routes/users";
 import { adminRouter } from "./routes/admin";
+import { debugRouter } from "./routes/debug";
 
 export function createApp() {
   const app = express();
@@ -74,6 +75,7 @@ export function createApp() {
   app.use("/api/comments", commentsRouter);
   app.use("/api", usersRouter);
   app.use("/api/admin", adminRouter);
+  app.use("/api/debug", debugRouter);
 
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);
