@@ -58,6 +58,9 @@ authRouter.post("/login", async (req, res) => {
   if (user.isBanned) {
     return res.status(403).json({ error: "Account banned" });
   }
+  if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
+    return res.status(403).json({ error: "Account banned" });
+  }
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) {
     return res.status(401).json({ error: "Invalid credentials" });
