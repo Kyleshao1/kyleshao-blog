@@ -30,6 +30,7 @@ postsRouter.get("/", authOptional, async (req, res) => {
       take: pageSize,
       include: {
         author: { select: { id: true, name: true, avatarUrl: true, signature: true } },
+        group: { select: { id: true, name: true } },
         reactions: true,
         _count: { select: { comments: true } },
       },
@@ -50,6 +51,7 @@ postsRouter.get("/", authOptional, async (req, res) => {
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       author: post.author,
+      group: post.group,
       counts: { comments: post._count.comments, likes, dislikes },
       viewerReaction,
     };
@@ -63,6 +65,7 @@ postsRouter.get("/:id", authOptional, async (req, res) => {
     where: { id: req.params.id, deletedAt: null },
     include: {
       author: { select: { id: true, name: true, avatarUrl: true, signature: true } },
+      group: { select: { id: true, name: true } },
       reactions: true,
       _count: { select: { comments: true } },
     },
@@ -84,6 +87,7 @@ postsRouter.get("/:id", authOptional, async (req, res) => {
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
       author: post.author,
+      group: post.group,
       counts: { comments: post._count.comments, likes, dislikes },
       viewerReaction,
     },
@@ -93,6 +97,7 @@ postsRouter.get("/:id", authOptional, async (req, res) => {
 const postSchema = z.object({
   title: z.string().min(1).max(120),
   contentMd: z.string().min(1),
+  groupId: z.string().optional().nullable(),
 });
 
 postsRouter.post("/", authRequired, ensureNotBanned, async (req, res) => {
@@ -100,11 +105,18 @@ postsRouter.post("/", authRequired, ensureNotBanned, async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: "Invalid payload" });
   }
+  if (parsed.data.groupId) {
+    const group = await prisma.postGroup.findUnique({ where: { id: parsed.data.groupId } });
+    if (!group || group.ownerId !== req.user!.id) {
+      return res.status(400).json({ error: "Invalid group" });
+    }
+  }
   const post = await prisma.post.create({
     data: {
       authorId: req.user!.id,
       title: parsed.data.title,
       contentMd: parsed.data.contentMd,
+      groupId: parsed.data.groupId || null,
     },
   });
   return res.status(201).json({ post });
@@ -122,9 +134,17 @@ postsRouter.put("/:id", authRequired, ensureNotBanned, async (req, res) => {
   if (post.authorId !== req.user!.id && req.user!.role !== "ADMIN") {
     return res.status(403).json({ error: "Forbidden" });
   }
+  let groupId = parsed.data.groupId || null;
+  if (groupId) {
+    const group = await prisma.postGroup.findUnique({ where: { id: groupId } });
+    if (!group || group.ownerId !== post.authorId) {
+      return res.status(400).json({ error: "Invalid group" });
+    }
+  }
+
   const updated = await prisma.post.update({
     where: { id: post.id },
-    data: { title: parsed.data.title, contentMd: parsed.data.contentMd },
+    data: { title: parsed.data.title, contentMd: parsed.data.contentMd, groupId },
   });
   return res.json({ post: updated });
 });
@@ -177,4 +197,3 @@ postsRouter.post("/:id/reaction", authRequired, ensureNotBanned, async (req, res
   });
   return res.json({ value: parsed.data.value });
 });
-
