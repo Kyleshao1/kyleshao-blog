@@ -7,7 +7,10 @@ export type AuthUser = {
   id: string;
   role: "USER" | "ADMIN";
   isBanned: boolean;
+  bannedUntil: Date | null;
   mutedUntil: Date | null;
+  mutedForever: boolean;
+  deactivatedAt: Date | null;
 };
 
 declare module "express-serve-static-core" {
@@ -26,7 +29,15 @@ export async function authRequired(req: Request, res: Response, next: NextFuncti
     const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string };
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, role: true, isBanned: true, mutedUntil: true, deactivatedAt: true },
+      select: {
+        id: true,
+        role: true,
+        isBanned: true,
+        bannedUntil: true,
+        mutedUntil: true,
+        mutedForever: true,
+        deactivatedAt: true,
+      },
     });
     if (!user) {
       return res.status(401).json({ error: "Unauthorized" });
@@ -50,7 +61,15 @@ export async function authOptional(req: Request, _res: Response, next: NextFunct
     const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string };
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, role: true, isBanned: true, mutedUntil: true, deactivatedAt: true },
+      select: {
+        id: true,
+        role: true,
+        isBanned: true,
+        bannedUntil: true,
+        mutedUntil: true,
+        mutedForever: true,
+        deactivatedAt: true,
+      },
     });
     if (user && !user.deactivatedAt) {
       req.user = user;
@@ -68,6 +87,12 @@ export function ensureNotBanned(req: Request, res: Response, next: NextFunction)
   }
   if (user.isBanned) {
     return res.status(403).json({ error: "Account banned" });
+  }
+  if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
+    return res.status(403).json({ error: "Account banned" });
+  }
+  if (user.mutedForever) {
+    return res.status(403).json({ error: "Account muted" });
   }
   if (user.mutedUntil && user.mutedUntil.getTime() > Date.now()) {
     return res.status(403).json({ error: "Account muted" });
