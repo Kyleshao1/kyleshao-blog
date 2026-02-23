@@ -46,7 +46,11 @@ export function PostPage() {
   };
 
   const removePost = async () => {
-    await apiFetch(`/api/posts/${id}`, { method: "DELETE" });
+    if (user?.role === "ADMIN") {
+      await apiFetch(`/api/admin/posts/${id}`, { method: "DELETE" });
+    } else {
+      await apiFetch(`/api/posts/${id}`, { method: "DELETE" });
+    }
     window.location.href = "/";
   };
 
@@ -85,6 +89,9 @@ export function PostPage() {
           <button className="btn btn--ghost" onClick={() => react(1)}>赞 {post.counts.likes}</button>
           <button className="btn btn--ghost" onClick={() => react(-1)}>踩 {post.counts.dislikes}</button>
           <span>评论 {post.counts.comments}</span>
+          {user?.role === "ADMIN" && (
+            <button className="btn btn--ghost" onClick={removePost}>管理员删除</button>
+          )}
         </div>
       </article>
 
