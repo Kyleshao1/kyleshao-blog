@@ -18,6 +18,7 @@ adminRouter.get("/users", async (_req, res) => {
       role: true,
       isBanned: true,
       mutedUntil: true,
+      deactivatedAt: true,
       createdAt: true,
     },
   });
@@ -74,4 +75,20 @@ adminRouter.delete("/comments/:id", async (req, res) => {
   }
   await prisma.comment.update({ where: { id: comment.id }, data: { deletedAt: new Date() } });
   return res.json({ ok: true });
+});
+
+adminRouter.patch("/users/:id/deactivate", async (req, res) => {
+  const target = await prisma.user.findUnique({ where: { id: req.params.id } });
+  if (!target) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  if (target.role === "ADMIN") {
+    return res.status(400).json({ error: "Cannot deactivate admin" });
+  }
+  const updated = await prisma.user.update({
+    where: { id: target.id },
+    data: { deactivatedAt: target.deactivatedAt ? null : new Date() },
+    select: { id: true, deactivatedAt: true },
+  });
+  return res.json({ user: updated });
 });
