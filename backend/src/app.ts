@@ -56,6 +56,9 @@ export function createApp() {
                 });
               }
             }
+            if (user.deactivatedAt) {
+              return done(new Error("Account deactivated"));
+            }
             if (user.isBanned) {
               return done(new Error("Account banned"));
             }
