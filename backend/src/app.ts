@@ -30,9 +30,12 @@ export function createApp() {
           clientSecret: env.GITHUB_CLIENT_SECRET,
           callbackURL: `${env.BACKEND_URL}/api/auth/github/callback`,
         },
-        async (_accessToken, _refreshToken, profile, done) => {
+        async (accessToken, _refreshToken, profile, done) => {
           try {
-            const email = profile.emails?.[0]?.value;
+            let email = profile.emails?.[0]?.value;
+            if (!email) {
+              email = await getGithubEmail(accessToken);
+            }
             if (!email) {
               return done(new Error("GitHub email not available"));
             }
@@ -86,4 +89,21 @@ export function createApp() {
   });
 
   return app;
+}
+
+async function getGithubEmail(accessToken: string) {
+  try {
+    const res = await fetch("https://api.github.com/user/emails", {
+      headers: {
+        Authorization: `token ${accessToken}`,
+        Accept: "application/vnd.github+json",
+      },
+    });
+    if (!res.ok) return null;
+    const emails = (await res.json()) as { email: string; primary: boolean; verified: boolean }[];
+    const primary = emails.find((e) => e.primary && e.verified) || emails.find((e) => e.verified);
+    return primary?.email || null;
+  } catch {
+    return null;
+  }
 }
