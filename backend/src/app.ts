@@ -65,6 +65,9 @@ export function createApp() {
             if (user.isBanned) {
               return done(new Error("Account banned"));
             }
+            if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
+              return done(new Error("Account banned"));
+            }
             return done(null, { id: user.id });
           } catch (err) {
             return done(err as Error);
