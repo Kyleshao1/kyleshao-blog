@@ -15,6 +15,9 @@ export function NavBar() {
           {user && <Link to="/editor">写文章</Link>}
           {user && <Link to="/profile">个人资料</Link>}
           {user?.role === "ADMIN" && <Link to="/admin">管理后台</Link>}
+          <a href="https://github.com/Kyleshao1/kyleshao-blog" target="_blank" rel="noreferrer">
+            GitHub
+          </a>
         </nav>
         <div className="nav__auth">
           {user ? (
