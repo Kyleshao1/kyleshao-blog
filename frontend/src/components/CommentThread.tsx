@@ -38,6 +38,8 @@ function CommentNode({ comment, onChanged }: { comment: CommentItem; onChanged: 
   const [text, setText] = useState("");
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(comment.contentMd);
+  const [showReplyPreview, setShowReplyPreview] = useState(false);
+  const [showEditPreview, setShowEditPreview] = useState(false);
 
   const react = async (value: 1 | -1) => {
     await apiFetch(`/api/comments/${comment.id}/reaction`, {
@@ -85,8 +87,16 @@ function CommentNode({ comment, onChanged }: { comment: CommentItem; onChanged: 
           <textarea className="textarea" value={editText} onChange={(e) => setEditText(e.target.value)} />
           <div className="row">
             <button className="btn" onClick={saveEdit}>保存</button>
+            <button className="btn btn--ghost" onClick={() => setShowEditPreview((v) => !v)}>
+              {showEditPreview ? "关闭预览" : "预览"}
+            </button>
             <button className="btn btn--ghost" onClick={() => setEditing(false)}>取消</button>
           </div>
+          {showEditPreview && (
+            <div className="card">
+              <Markdown content={editText || "预览内容"} />
+            </div>
+          )}
         </div>
       ) : (
         <div className="comment__body">
@@ -111,8 +121,16 @@ function CommentNode({ comment, onChanged }: { comment: CommentItem; onChanged: 
           <textarea className="textarea" value={text} onChange={(e) => setText(e.target.value)} />
           <div className="row">
             <button className="btn" onClick={reply}>提交</button>
+            <button className="btn btn--ghost" onClick={() => setShowReplyPreview((v) => !v)}>
+              {showReplyPreview ? "关闭预览" : "预览"}
+            </button>
             <button className="btn btn--ghost" onClick={() => setReplying(false)}>取消</button>
           </div>
+          {showReplyPreview && (
+            <div className="card">
+              <Markdown content={text || "预览内容"} />
+            </div>
+          )}
         </div>
       )}
       {comment.replies.length > 0 && (
