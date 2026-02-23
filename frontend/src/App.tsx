@@ -10,6 +10,7 @@ import { EditorPage } from "./pages/EditorPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { AdminPage } from "./pages/AdminPage";
 import { OAuthPage } from "./pages/OAuthPage";
+import { UserPage } from "./pages/UserPage";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/oauth" element={<OAuthPage />} />
         <Route path="/posts/:id" element={<PostPage />} />
+        <Route path="/users/:id" element={<UserPage />} />
         <Route
           path="/editor"
           element={
