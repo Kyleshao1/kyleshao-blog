@@ -23,7 +23,9 @@ model User {
   signature    String   @default("")
   role         Role     @default(USER)
   isBanned     Boolean  @default(false) @map("is_banned")
+  bannedUntil  DateTime? @map("banned_until")
   mutedUntil   DateTime? @map("muted_until")
+  mutedForever Boolean  @default(false) @map("muted_forever")
   deactivatedAt DateTime? @map("deactivated_at")
   createdAt    DateTime @default(now()) @map("created_at")
 
