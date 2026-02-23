@@ -12,6 +12,10 @@ export function UserPage() {
   const [comments, setComments] = useState<any[]>([]);
   const [following, setFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [banHours, setBanHours] = useState("24");
+  const [banPermanent, setBanPermanent] = useState(false);
+  const [muteHours, setMuteHours] = useState("24");
+  const [mutePermanent, setMutePermanent] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -51,6 +55,40 @@ export function UserPage() {
     load();
   };
 
+  const ban = async () => {
+    if (banPermanent) {
+      await apiFetch(`/api/admin/users/${id}`, { method: "PATCH", body: JSON.stringify({ banPermanent: true }) });
+    } else {
+      await apiFetch(`/api/admin/users/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ banHours: Number(banHours) }),
+      });
+    }
+    load();
+  };
+
+  const unban = async () => {
+    await apiFetch(`/api/admin/users/${id}`, { method: "PATCH", body: JSON.stringify({ unban: true }) });
+    load();
+  };
+
+  const mute = async () => {
+    if (mutePermanent) {
+      await apiFetch(`/api/admin/users/${id}`, { method: "PATCH", body: JSON.stringify({ mutePermanent: true }) });
+    } else {
+      await apiFetch(`/api/admin/users/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ muteHours: Number(muteHours) }),
+      });
+    }
+    load();
+  };
+
+  const unmute = async () => {
+    await apiFetch(`/api/admin/users/${id}`, { method: "PATCH", body: JSON.stringify({ unmute: true }) });
+    load();
+  };
+
   if (loading) {
     return <main className="container">加载中...</main>;
   }
@@ -74,6 +112,41 @@ export function UserPage() {
           <button className="btn btn--ghost" onClick={toggleFollow}>
             {following ? "取消关注" : "关注"}
           </button>
+        )}
+        {user?.role === "ADMIN" && user.id !== profile.id && (
+          <div className="card">
+            <h3>管理员操作</h3>
+            <div className="row">
+              <input
+                className="input"
+                type="number"
+                min="1"
+                value={banHours}
+                onChange={(e) => setBanHours(e.target.value)}
+              />
+              <label className="row">
+                <input type="checkbox" checked={banPermanent} onChange={(e) => setBanPermanent(e.target.checked)} />
+                永久封号
+              </label>
+              <button className="btn btn--ghost" onClick={ban}>封号</button>
+              <button className="btn btn--ghost" onClick={unban}>解除封号</button>
+            </div>
+            <div className="row">
+              <input
+                className="input"
+                type="number"
+                min="1"
+                value={muteHours}
+                onChange={(e) => setMuteHours(e.target.value)}
+              />
+              <label className="row">
+                <input type="checkbox" checked={mutePermanent} onChange={(e) => setMutePermanent(e.target.checked)} />
+                永久禁言
+              </label>
+              <button className="btn btn--ghost" onClick={mute}>禁言</button>
+              <button className="btn btn--ghost" onClick={unmute}>解除禁言</button>
+            </div>
+          </div>
         )}
       </section>
 
