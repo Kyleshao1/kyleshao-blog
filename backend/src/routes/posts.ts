@@ -157,10 +157,21 @@ postsRouter.delete("/:id", authRequired, async (req, res) => {
   if (post.authorId !== req.user!.id && req.user!.role !== "ADMIN") {
     return res.status(403).json({ error: "Forbidden" });
   }
-  await prisma.post.update({
-    where: { id: post.id },
-    data: { deletedAt: new Date() },
+  const commentIds = await prisma.comment.findMany({
+    where: { postId: post.id },
+    select: { id: true },
   });
+  const ids = commentIds.map((c) => c.id);
+
+  await prisma.$transaction([
+    prisma.commentReaction.deleteMany({ where: { commentId: { in: ids } } }),
+    prisma.comment.deleteMany({ where: { postId: post.id } }),
+    prisma.postReaction.deleteMany({ where: { postId: post.id } }),
+    prisma.post.update({
+      where: { id: post.id },
+      data: { deletedAt: new Date() },
+    }),
+  ]);
   return res.json({ ok: true });
 });
 
