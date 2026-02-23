@@ -4,7 +4,7 @@ import { useAuth } from "../auth";
 import { Markdown } from "../components/Markdown";
 
 export function ProfilePage() {
-  const { user, refresh } = useAuth();
+  const { user, refresh, logout } = useAuth();
   const [name, setName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bio, setBio] = useState("");
@@ -44,6 +44,18 @@ export function ProfilePage() {
     setMessage("已保存");
   };
 
+  const deactivate = async () => {
+    const ok = window.confirm("不是登出，是注销！！注销后改账号再也无法使用");
+    if (!ok) return;
+    const password = window.prompt("请输入密码确认注销");
+    if (!password) return;
+    await apiFetch("/api/me", {
+      method: "DELETE",
+      body: JSON.stringify({ password }),
+    });
+    logout();
+  };
+
   const createGroup = async () => {
     if (!newGroup.trim()) return;
     await apiFetch("/api/groups", {
@@ -72,6 +84,7 @@ export function ProfilePage() {
           {showPreview ? "关闭预览" : "预览资料"}
         </button>
         <button className="btn" onClick={save} disabled={saving}>保存</button>
+        <button className="btn btn--ghost" onClick={deactivate}>注销账号</button>
       </div>
 
       {showPreview && (
