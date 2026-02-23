@@ -26,10 +26,13 @@ export async function authRequired(req: Request, res: Response, next: NextFuncti
     const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string };
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, role: true, isBanned: true, mutedUntil: true },
+      select: { id: true, role: true, isBanned: true, mutedUntil: true, deactivatedAt: true },
     });
     if (!user) {
       return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (user.deactivatedAt) {
+      return res.status(403).json({ error: "Account deactivated" });
     }
     req.user = user;
     return next();
@@ -47,9 +50,9 @@ export async function authOptional(req: Request, _res: Response, next: NextFunct
     const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string };
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, role: true, isBanned: true, mutedUntil: true },
+      select: { id: true, role: true, isBanned: true, mutedUntil: true, deactivatedAt: true },
     });
-    if (user) {
+    if (user && !user.deactivatedAt) {
       req.user = user;
     }
   } catch {
