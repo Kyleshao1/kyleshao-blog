@@ -52,6 +52,9 @@ authRouter.post("/login", async (req, res) => {
   if (!user || !user.passwordHash) {
     return res.status(401).json({ error: "Invalid credentials" });
   }
+  if (user.deactivatedAt) {
+    return res.status(403).json({ error: "Account deactivated" });
+  }
   if (user.isBanned) {
     return res.status(403).json({ error: "Account banned" });
   }
