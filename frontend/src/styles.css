@@ -261,6 +261,11 @@ a {
   align-items: center;
 }
 
+.row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
 .table {
   display: grid;
   gap: 12px;
