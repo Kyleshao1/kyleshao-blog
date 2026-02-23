@@ -9,6 +9,7 @@ type AdminUser = {
   role: "USER" | "ADMIN";
   isBanned: boolean;
   mutedUntil?: string | null;
+  deactivatedAt?: string | null;
   createdAt: string;
 };
 
@@ -56,6 +57,11 @@ export function AdminPage() {
       method: "PATCH",
       body: JSON.stringify({ mutedUntil: null }),
     });
+    load();
+  };
+
+  const toggleDeactivate = async (target: AdminUser) => {
+    await apiFetch(`/api/admin/users/${target.id}/deactivate`, { method: "PATCH" });
     load();
   };
 
@@ -107,6 +113,9 @@ export function AdminPage() {
                       </button>
                       <button className="btn btn--ghost" onClick={() => mute(u, 24)}>禁言 24h</button>
                       <button className="btn btn--ghost" onClick={() => unmute(u)}>解除禁言</button>
+                      <button className="btn btn--ghost" onClick={() => toggleDeactivate(u)}>
+                        {u.deactivatedAt ? "恢复账号" : "注销账号"}
+                      </button>
                     </>
                   )}
                 </div>
