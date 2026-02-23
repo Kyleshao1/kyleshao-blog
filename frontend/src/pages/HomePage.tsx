@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "../api";
-import { PostCard, PostListItem } from "../components/PostCard";
+import { UserCard, UserListItem } from "../components/UserCard";
 
 export function HomePage() {
-  const [items, setItems] = useState<PostListItem[]>([]);
+  const [items, setItems] = useState<UserListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   const load = async (q = "") => {
     setLoading(true);
-    const data = await apiFetch<{ items: PostListItem[] }>(`/api/posts?search=${encodeURIComponent(q)}`);
-    setItems(data.items);
+    const data = await apiFetch<{ users: UserListItem[] }>(`/api/users`);
+    const filtered = q
+      ? data.users.filter((u) =>
+          (u.name || "").toLowerCase().includes(q.toLowerCase()) ||
+          (u.bio || "").toLowerCase().includes(q.toLowerCase())
+        )
+      : data.users;
+    setItems(filtered);
     setLoading(false);
   };
 
@@ -23,7 +29,7 @@ export function HomePage() {
       <div className="toolbar">
         <input
           className="input"
-          placeholder="搜索标题或内容"
+          placeholder="搜索用户或简介"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -33,8 +39,8 @@ export function HomePage() {
         <div>加载中...</div>
       ) : (
         <div className="list">
-          {items.map((post) => (
-            <PostCard key={post.id} post={post} />
+          {items.map((user) => (
+            <UserCard key={user.id} user={user} />
           ))}
         </div>
       )}
