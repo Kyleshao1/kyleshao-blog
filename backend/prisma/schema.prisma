@@ -24,6 +24,7 @@ model User {
   role         Role     @default(USER)
   isBanned     Boolean  @default(false) @map("is_banned")
   mutedUntil   DateTime? @map("muted_until")
+  deactivatedAt DateTime? @map("deactivated_at")
   createdAt    DateTime @default(now()) @map("created_at")
 
   posts        Post[]
