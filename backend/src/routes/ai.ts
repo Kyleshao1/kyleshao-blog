@@ -9,7 +9,10 @@ const generateSchema = z.object({
 });
 
 type MiniMaxResponse = {
-  choices?: { message?: { content?: string } }[];
+  choices?: { message?: { content?: string }; text?: string }[];
+  reply?: string;
+  output?: { text?: string };
+  data?: { choices?: { message?: { content?: string }; text?: string }[] };
 };
 
 aiRouter.post("/ai/generate", async (req, res) => {
@@ -53,8 +56,19 @@ aiRouter.post("/ai/generate", async (req, res) => {
     }
 
     const data = (await resp.json()) as MiniMaxResponse;
-    const content = data.choices?.[0]?.message?.content || "";
-    return res.json({ markdown: content });
+    console.log("MiniMax response", JSON.stringify(data));
+    const content =
+      data.choices?.[0]?.message?.content ||
+      data.choices?.[0]?.text ||
+      data.data?.choices?.[0]?.message?.content ||
+      data.data?.choices?.[0]?.text ||
+      data.reply ||
+      data.output?.text ||
+      "";
+    return res.json({
+      markdown: content,
+      ...(content ? {} : env.NODE_ENV !== "production" ? { raw: data } : {})
+    });
   } catch (err) {
     return res.status(502).json({ error: "MiniMax request failed" });
   }
