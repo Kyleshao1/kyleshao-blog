@@ -13,6 +13,7 @@ import { usersRouter } from "./routes/users";
 import { adminRouter } from "./routes/admin";
 import { debugRouter } from "./routes/debug";
 import { renderRouter } from "./routes/render";
+import { aiRouter } from "./routes/ai";
 
 export function createApp() {
   const app = express();
@@ -87,6 +88,7 @@ export function createApp() {
   app.use("/api/admin", adminRouter);
   app.use("/api/debug", debugRouter);
   app.use("/api", renderRouter);
+  app.use("/api", aiRouter);
 
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);
