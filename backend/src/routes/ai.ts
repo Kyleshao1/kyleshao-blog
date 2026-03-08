@@ -46,6 +46,7 @@ aiRouter.post("/ai/generate", async (req, res) => {
 
     if (!resp.ok) {
       const text = await resp.text();
+      console.error("MiniMax error", resp.status, text);
       return res.status(502).json({ error: "MiniMax request failed", detail: text });
     }
 
