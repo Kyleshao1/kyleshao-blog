@@ -56,7 +56,9 @@ export function EditorPage() {
         method: "POST",
         body: JSON.stringify({ prompt: aiPrompt }),
       });
-      setAiResult(data.markdown || "");
+      const md = data.markdown || "";
+      setAiResult(md);
+      setContent(md);
     } catch (err) {
       alert((err as Error).message);
     } finally {
