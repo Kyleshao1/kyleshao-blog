@@ -16,6 +16,7 @@ aiRouter.post("/ai/generate", async (req, res) => {
   if (!env.MINIMAX_API_KEY) {
     return res.status(400).json({ error: "MiniMax API key not configured" });
   }
+  console.log("MINIMAX_API_KEY length:", env.MINIMAX_API_KEY?.length);
   const parsed = generateSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "Invalid payload" });
