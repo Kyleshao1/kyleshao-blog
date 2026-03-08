@@ -15,6 +15,7 @@ const envSchema = z.object({
   ADMIN_EMAIL: z.string().email().optional(),
   MINIMAX_API_KEY: z.string().optional(),
   MINIMAX_MODEL: z.string().optional(),
+  MINIMAX_GROUP_ID: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);
