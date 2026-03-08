@@ -56,6 +56,7 @@ export function EditorPage() {
         method: "POST",
         body: JSON.stringify({ prompt: aiPrompt }),
       });
+      console.log("ai generate response", data);
       const md = data.markdown || "";
       setAiResult(md);
       setContent(md);
