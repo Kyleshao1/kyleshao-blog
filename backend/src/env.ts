@@ -13,6 +13,8 @@ const envSchema = z.object({
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
   ADMIN_EMAIL: z.string().email().optional(),
+  MINIMAX_API_KEY: z.string().optional(),
+  MINIMAX_MODEL: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);
