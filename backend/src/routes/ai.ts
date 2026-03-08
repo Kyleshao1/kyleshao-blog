@@ -36,11 +36,12 @@ aiRouter.post("/ai/generate", async (req, res) => {
   };
 
   try {
-    const resp = await fetch("https://api.minimax.io/v1/chat/completions", {
+    const resp = await fetch("https://api.minimax.io/v1/text/chatcompletion_v2", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${env.MINIMAX_API_KEY}`,
+        ...(env.MINIMAX_GROUP_ID ? { "Group-Id": env.MINIMAX_GROUP_ID } : {})
       },
       body: JSON.stringify(body),
     });
