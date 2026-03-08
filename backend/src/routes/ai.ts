@@ -39,8 +39,9 @@ aiRouter.post("/ai/generate", async (req, res) => {
   };
 
   try {
-    const host = env.MINIMAX_API_HOST || "https://api.minimax.io";
-    const url = `${host.replace(/\\/$/, "")}/v1/text/chatcompletion_v2`;
+    let host = env.MINIMAX_API_HOST || "https://api.minimax.io";
+    if (host.endsWith("/")) host = host.slice(0, -1);
+    const url = host + "/v1/text/chatcompletion_v2";
     const keyType = env.MINIMAX_KEY_TYPE || "api";
     const authHeader = `Bearer ${env.MINIMAX_API_KEY}`;
     const resp = await fetch(url, {
