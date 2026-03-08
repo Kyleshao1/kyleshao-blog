@@ -16,6 +16,8 @@ const envSchema = z.object({
   MINIMAX_API_KEY: z.string().optional(),
   MINIMAX_MODEL: z.string().optional(),
   MINIMAX_GROUP_ID: z.string().optional(),
+  MINIMAX_API_HOST: z.string().optional(),
+  MINIMAX_KEY_TYPE: z.enum(["api", "coding"]).optional(),
 });
 
 export const env = envSchema.parse(process.env);
