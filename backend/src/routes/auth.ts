@@ -2,9 +2,9 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import passport from "passport";
-import { prisma } from "../db";
-import { signJwt } from "../utils/auth";
-import { env } from "../env";
+import { prisma } from "../db.js";
+import { signJwt } from "../utils/auth.js";
+import { env } from "../env.js";
 
 export const authRouter = Router();
 
@@ -87,3 +87,63 @@ authRouter.get(
     return res.redirect(redirectUrl.toString());
   }
 );
+
+authRouter.get("/kydev/callback", async (req, res) => {
+  if (!env.KYLEDEV_OAUTH_ISSUER || !env.KYLEDEV_CLIENT_ID || !env.KYLEDEV_CLIENT_SECRET || !env.KYLEDEV_REDIRECT_URI) {
+    return res.status(400).json({ error: "Kydev OAuth not configured" });
+  }
+  const code = String(req.query.code || "");
+  if (!code) return res.status(400).json({ error: "Missing code" });
+
+  const tokenResp = await fetch(`${env.KYLEDEV_OAUTH_ISSUER}/api/oauth-token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      grant_type: "authorization_code",
+      code,
+      client_id: env.KYLEDEV_CLIENT_ID,
+      client_secret: env.KYLEDEV_CLIENT_SECRET,
+      redirect_uri: env.KYLEDEV_REDIRECT_URI
+    })
+  });
+  if (!tokenResp.ok) {
+    const err = await tokenResp.text().catch(() => "");
+    return res.status(400).json({ error: `OAuth token failed: ${err}` });
+  }
+  const tokenData = await tokenResp.json();
+  const accessToken = tokenData.access_token;
+  if (!accessToken) return res.status(400).json({ error: "Missing access_token" });
+
+  const userResp = await fetch(`${env.KYLEDEV_OAUTH_ISSUER}/api/oauth-userinfo`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  if (!userResp.ok) {
+    const err = await userResp.text().catch(() => "");
+    return res.status(400).json({ error: `OAuth userinfo failed: ${err}` });
+  }
+  const profile = await userResp.json();
+
+  let merged = false;
+  let user = await prisma.user.findFirst({ where: { name: profile.username } });
+  if (user) {
+    merged = true;
+  } else {
+    user = await prisma.user.findUnique({ where: { email: profile.email } });
+  }
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email: profile.email,
+        name: profile.username || profile.email.split("@")[0],
+        role: "USER"
+      }
+    });
+  }
+
+  const token = signJwt(user.id);
+  const redirectUrl = new URL(env.FRONTEND_URL + "/oauth");
+  redirectUrl.searchParams.set("token", token);
+  if (merged) redirectUrl.searchParams.set("merge", "1");
+  return res.redirect(redirectUrl.toString());
+});
