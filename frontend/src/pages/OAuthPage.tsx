@@ -9,8 +9,14 @@ export function OAuthPage() {
 
   useEffect(() => {
     const token = params.get("token");
+    const merged = params.get("merge") === "1";
     if (token) {
-      login(token).then(() => navigate("/"));
+      login(token).then(() => {
+        if (merged) {
+          alert("检测到同名账号，已自动合并。");
+        }
+        navigate("/");
+      });
     } else {
       navigate("/login");
     }
